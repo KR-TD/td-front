@@ -37,11 +37,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return;
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch('https://code.haru2end.dedyn.io/api/user/info', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const userData = await response.json();
         // Fix for Mixed Content error from Kakao CDN
@@ -63,11 +69,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const token = localStorage.getItem('accessToken');
       if (token) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
           const response = await fetch('https://code.haru2end.dedyn.io/api/user/is-logged-in', {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
+            signal: controller.signal,
           });
+          clearTimeout(timeoutId);
+
           if (response.ok && await response.json()) {
             setIsLoggedIn(true);
             await fetchUser();

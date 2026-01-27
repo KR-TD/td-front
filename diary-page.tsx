@@ -169,7 +169,7 @@ export default function Component({ boardId }: { boardId?: string }) {
                   )}
                   <Button onClick={() => setIsDarkMode(!isDarkMode)} variant="ghost" aria-label={t(isDarkMode ? "switch_to_light_mode" : "switch_to_dark_mode")} >{isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}</Button>
                   <div className="flex items-center">
-                    {isLoading ? <div className="w-20 h-8 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
+                    {isLoading ? <div className="flex items-center gap-2"><div className="w-16 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /><div className="w-20 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /></div> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
                   </div>
                   {/* 모바일 메뉴 버튼 */}
                   <MobileMenuSheet
