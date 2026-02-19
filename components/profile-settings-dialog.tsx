@@ -308,7 +308,7 @@ export function ProfileSettingsDialog({
 
             <div className="space-y-2">
               <Label>{tx("email", "이메일")}</Label>
-              <Input value={user?.email || ""} readOnly className={inputClass} />
+              <Input value={user?.email || ""} readOnly disabled className={`${inputClass} opacity-70 cursor-not-allowed`} />
             </div>
 
             <div className="flex justify-end">

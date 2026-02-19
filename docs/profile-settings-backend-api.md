@@ -104,6 +104,51 @@ Recommended status codes:
 - `409 Conflict`: duplicate nickname, etc.
 - `500 Internal Server Error`: server failure
 
+## 6) Forgot password flow from login (new required endpoint)
+Frontend flow:
+1. Send code
+2. Verify code
+3. Reset password
+
+### 6-1) Send email code
+- `POST /user/send/code`
+- Auth required: no
+- Request:
+```json
+{
+  "email": "beargame@example.com"
+}
+```
+- Response: `201 Created` (or `200 OK`)
+
+### 6-2) Verify code
+- `POST /user/code/check`
+- Auth required: no
+- Request:
+```json
+{
+  "email": "beargame@example.com",
+  "code": "123456"
+}
+```
+- Response: `200 OK` + `true` / `false`
+
+### 6-3) Reset password
+- `PATCH /user/password/reset`
+- Auth required: no
+- Request:
+```json
+{
+  "email": "beargame@example.com",
+  "code": "123456",
+  "password": "New!Pass123",
+  "passwordValid": "New!Pass123"
+}
+```
+- Response options:
+1. `200 OK`
+2. `204 No Content`
+
 ## Frontend files already wired to these endpoints
 - `components/profile-settings-dialog.tsx`
 - `components/user-menu.tsx`
