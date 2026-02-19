@@ -33,6 +33,7 @@ import { CommunityView } from "@/components/community-view";
 import { SupportView } from "@/components/support-view";
 import { HallView } from "@/components/hall-view";
 import { ContactView } from "@/components/contact-view";
+import { ProfileSettingsDialog } from "@/components/profile-settings-dialog";
 
 export default function Component({ boardId }: { boardId?: string }) {
   const isMobile = useIsMobile()
@@ -42,6 +43,8 @@ export default function Component({ boardId }: { boardId?: string }) {
   const [isClient, setIsClient] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showSignupDialog, setShowSignupDialog] = useState(false);
+  const [showProfileSettingsDialog, setShowProfileSettingsDialog] = useState(false);
+  const [profileSettingsTab, setProfileSettingsTab] = useState<"profile" | "settings">("profile");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [alertInfo, setAlertInfo] = useState<{ isOpen: boolean; title: string; description: string; }>({ isOpen: false, title: "", description: "" });
   const [currentView, setCurrentView] = useState<"write" | "list" | "support" | "hall" | "contact" | "community">("write")
@@ -55,7 +58,7 @@ export default function Component({ boardId }: { boardId?: string }) {
   const dismissAppPromo = () => setShowAppPromo(false);
 
   const { t, i18n } = useTranslation();
-  const { isLoggedIn, isLoading, user, logout } = useAuth();
+  const { isLoggedIn, isLoading, user, logout, refreshUser } = useAuth();
   const {
     diaryEntries,
     selectedEntry,
@@ -169,7 +172,7 @@ export default function Component({ boardId }: { boardId?: string }) {
                   )}
                   <Button onClick={() => setIsDarkMode(!isDarkMode)} variant="ghost" aria-label={t(isDarkMode ? "switch_to_light_mode" : "switch_to_dark_mode")} >{isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}</Button>
                   <div className="flex items-center">
-                    {isLoading ? <div className="flex items-center gap-2"><div className="w-16 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /><div className="w-20 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /></div> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
+                    {isLoading ? <div className="flex items-center gap-2"><div className="w-16 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /><div className="w-20 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /></div> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} onOpenProfile={() => { setProfileSettingsTab("profile"); setShowProfileSettingsDialog(true); }} onOpenSettings={() => { setProfileSettingsTab("settings"); setShowProfileSettingsDialog(true); }} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
                   </div>
                   {/* 모바일 메뉴 버튼 */}
                   <MobileMenuSheet
@@ -183,6 +186,8 @@ export default function Component({ boardId }: { boardId?: string }) {
                     logout={logout}
                     setShowLoginDialog={setShowLoginDialog}
                     setShowSignupDialog={setShowSignupDialog}
+                    onOpenProfile={() => { setProfileSettingsTab("profile"); setShowProfileSettingsDialog(true); }}
+                    onOpenSettings={() => { setProfileSettingsTab("settings"); setShowProfileSettingsDialog(true); }}
                     currentView={currentView}
                   />
                 </div>
@@ -211,6 +216,15 @@ export default function Component({ boardId }: { boardId?: string }) {
 
       <LoginDialog isOpen={showLoginDialog} onClose={() => setShowLoginDialog(false)} isDarkMode={isDarkMode} />
       <SignupDialog isOpen={showSignupDialog} onClose={() => setShowSignupDialog(false)} isDarkMode={isDarkMode} />
+      <ProfileSettingsDialog
+        open={showProfileSettingsDialog}
+        onClose={() => setShowProfileSettingsDialog(false)}
+        isDarkMode={isDarkMode}
+        user={user}
+        initialTab={profileSettingsTab}
+        refreshUser={refreshUser}
+        setAlertInfo={setAlertInfo}
+      />
       <CustomAlertDialog isOpen={alertInfo.isOpen} onClose={() => setAlertInfo(prev => ({...prev, isOpen: false}))} title={alertInfo.title} description={alertInfo.description} isDarkMode={isDarkMode} />
 
       {showAppPromo && <div className={`fixed z-50 ${isMobile ? "left-3 right-3 bottom-3" : "right-6 bottom-6 w-[360px]"}`}>{/* ... App Promo Banner ... */}</div>}

@@ -19,6 +19,8 @@ interface MobileMenuSheetProps {
   logout: () => void;
   setShowLoginDialog: (show: boolean) => void;
   setShowSignupDialog: (show: boolean) => void;
+  onOpenProfile: () => void;
+  onOpenSettings: () => void;
   currentView: "write" | "list" | "support" | "hall" | "contact" | "community";
 }
 
@@ -33,6 +35,8 @@ export function MobileMenuSheet({
   logout,
   setShowLoginDialog,
   setShowSignupDialog,
+  onOpenProfile,
+  onOpenSettings,
   currentView,
 }: MobileMenuSheetProps) {
   const { t } = useTranslation();
@@ -79,7 +83,11 @@ export function MobileMenuSheet({
             {isLoading ? (
               <div className="w-full h-8 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ) : isLoggedIn ? (
-              <Button onClick={() => {logout(); closeSheet();}} variant="ghost" className={`justify-start text-red-500 dark:text-red-400`}>{t("logout")}</Button>
+              <>
+                <Button onClick={() => { onOpenProfile(); closeSheet(); }} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("profile")}</Button>
+                <Button onClick={() => { onOpenSettings(); closeSheet(); }} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("settings")}</Button>
+                <Button onClick={() => {logout(); closeSheet();}} variant="ghost" className={`justify-start text-red-500 dark:text-red-400`}>{t("logout")}</Button>
+              </>
             ) : (
               <>
                 <Button onClick={() => {setShowLoginDialog(true); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("login")}</Button>

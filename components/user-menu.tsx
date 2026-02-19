@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User as UserIcon, LogOut, Settings, Sun, Moon } from "lucide-react";
+import { User as UserIcon, LogOut, Settings } from "lucide-react";
 
 interface UserMenuProps {
   isDarkMode: boolean;
@@ -18,7 +18,8 @@ interface UserMenuProps {
   userName?: string;
   userEmail?: string;
   avatarUrl?: string;
-  onThemeToggle?: () => void;
+  onOpenProfile: () => void;
+  onOpenSettings: () => void;
 }
 
 export function UserMenu({
@@ -28,7 +29,8 @@ export function UserMenu({
   userName = "곰겜", // Placeholder
   userEmail = "beargame@example.com", // Placeholder
   avatarUrl,
-  onThemeToggle,
+  onOpenProfile,
+  onOpenSettings,
 }: UserMenuProps) {
   const surface = isDarkMode ? "bg-slate-900" : "bg-white";
   const text = isDarkMode ? "text-slate-100" : "text-slate-800";
@@ -81,11 +83,11 @@ export function UserMenu({
         </div>
         <DropdownMenuSeparator className={separatorClass} />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => {}} className={itemBase}>
+          <DropdownMenuItem onClick={onOpenProfile} className={itemBase}>
             <UserIcon className="w-4 h-4 mr-2 opacity-80" />
             {t("profile")}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => {}} className={itemBase}>
+          <DropdownMenuItem onClick={onOpenSettings} className={itemBase}>
             <Settings className="w-4 h-4 mr-2 opacity-80" />
             {t("settings")}
           </DropdownMenuItem>

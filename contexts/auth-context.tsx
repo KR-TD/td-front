@@ -14,6 +14,7 @@ interface AuthContextType {
   user: UserResponse | null;
   login: (atk: string, rtk: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -109,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchUser]);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, refreshUser: fetchUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
