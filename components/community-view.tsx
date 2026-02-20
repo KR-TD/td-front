@@ -575,7 +575,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
             </div>
             <div className="p-2 sm:p-3 border-t shrink-0">
               <div className="flex items-center gap-2">
-                <Input value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder={t('add_comment_placeholder')} className="h-10" />
+                <Input value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder={t('community_comment_placeholder')} className="h-10" />
                 <Button onClick={() => openedPost && createComment(openedPost.id, commentInput.trim())} disabled={!commentInput.trim()} className="h-10"><Send className="w-4 h-4" /></Button>
               </div>
             </div>
