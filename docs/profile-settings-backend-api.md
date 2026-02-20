@@ -111,7 +111,7 @@ Frontend flow:
 3. Reset password
 
 ### 6-1) Send email code
-- `POST /user/send/code`
+- `POST /user/password/reset/code`
 - Auth required: no
 - Request:
 ```json
@@ -122,7 +122,7 @@ Frontend flow:
 - Response: `201 Created` (or `200 OK`)
 
 ### 6-2) Verify code
-- `POST /user/code/check`
+- `POST /user/password/reset/code/check`
 - Auth required: no
 - Request:
 ```json

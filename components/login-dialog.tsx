@@ -108,7 +108,7 @@ export function LoginDialog({
     setResetError(null)
     setIsSendingCode(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/user/send/code`, {
+      const response = await fetch(`${API_BASE_URL}/user/password/reset/code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail }),
@@ -143,7 +143,7 @@ export function LoginDialog({
     setResetError(null)
     setIsResetting(true)
     try {
-      const verifyResponse = await fetch(`${API_BASE_URL}/user/code/check`, {
+      const verifyResponse = await fetch(`${API_BASE_URL}/user/password/reset/code/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail, code: resetCode }),
