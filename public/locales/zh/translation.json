@@ -111,6 +111,8 @@
   "enter_title_alert": "请输入标题！",
   "enter_content_alert": "请输入内容！",
   "validation_error": "验证错误",
+  "auth_error": "认证错误",
+  "login_required": "需要登录。",
   "sending_code": "发送中...",
   "send_code": "发送验证码",
   "verification_code_placeholder": "请输入验证码。",

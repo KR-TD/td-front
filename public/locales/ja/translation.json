@@ -111,6 +111,8 @@
   "enter_title_alert": "タイトルを入力してください！",
   "enter_content_alert": "内容を入力してください！",
   "validation_error": "検証エラー",
+  "auth_error": "認証エラー",
+  "login_required": "ログインが必要です。",
   "sending_code": "送信中...",
   "send_code": "認証コードを送信",
   "verification_code_placeholder": "認証コードを入力してください。",

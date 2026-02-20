@@ -41,6 +41,7 @@ export default function Component({ boardId }: { boardId?: string }) {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
   const [isClient, setIsClient] = useState(false);
+  const [hasAccessToken, setHasAccessToken] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showSignupDialog, setShowSignupDialog] = useState(false);
   const [showProfileSettingsDialog, setShowProfileSettingsDialog] = useState(false);
@@ -73,7 +74,15 @@ export default function Component({ boardId }: { boardId?: string }) {
     handleViewDetails,
   } = useDiary(setAlertInfo, t);
 
-  useEffect(() => { setIsClient(true) }, [])
+  useEffect(() => {
+    setIsClient(true);
+    setHasAccessToken(!!localStorage.getItem('accessToken'));
+  }, [])
+
+  useEffect(() => {
+    if (!isClient) return;
+    setHasAccessToken(!!localStorage.getItem('accessToken'));
+  }, [isClient, isLoggedIn])
 
   useEffect(() => {
     if (boardId) {
@@ -126,7 +135,7 @@ export default function Component({ boardId }: { boardId?: string }) {
       case "list":
         return <ListView isDarkMode={isDarkMode} diaryEntries={diaryEntries} currentItems={currentItems} currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} handleViewDetails={handleViewDetails} handleShare={handleShare} handleDelete={handleDelete} formatEntryDate={formatEntryDate} moodEnumToEmojiMap={moodEnumToEmojiMap} />;
       case "community":
-        return <CommunityView isDarkMode={isDarkMode} setAlertInfo={setAlertInfo} initialPostId={boardId} />;
+        return <CommunityView isDarkMode={isDarkMode} setAlertInfo={setAlertInfo} initialPostId={boardId} onRequireLogin={() => setShowLoginDialog(true)} />;
       case "support":
         return <SupportView isDarkMode={isDarkMode} />;
       case "hall":
@@ -172,7 +181,7 @@ export default function Component({ boardId }: { boardId?: string }) {
                   )}
                   <Button onClick={() => setIsDarkMode(!isDarkMode)} variant="ghost" aria-label={t(isDarkMode ? "switch_to_light_mode" : "switch_to_dark_mode")} >{isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}</Button>
                   <div className="flex items-center">
-                    {isLoading ? <div className="flex items-center gap-2"><div className="w-16 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /><div className="w-20 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /></div> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} onOpenProfile={() => { setProfileSettingsTab("profile"); setShowProfileSettingsDialog(true); }} onOpenSettings={() => { setProfileSettingsTab("settings"); setShowProfileSettingsDialog(true); }} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
+                    {isLoading && hasAccessToken ? <div className="flex items-center gap-2"><div className="w-16 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /><div className="w-20 h-10 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse" /></div> : isLoggedIn && user ? <UserMenu isDarkMode={isDarkMode} t={t} onLogout={logout} userName={user.name} userEmail={user.email} avatarUrl={user.profileImageUrl} onOpenProfile={() => { setProfileSettingsTab("profile"); setShowProfileSettingsDialog(true); }} onOpenSettings={() => { setProfileSettingsTab("settings"); setShowProfileSettingsDialog(true); }} /> : <div className="flex items-center gap-2"><Button variant="ghost" onClick={() => setShowLoginDialog(true)}>{t("login")}</Button><Button variant="ghost" onClick={() => setShowSignupDialog(true)}>{t("signup")}</Button></div>}
                   </div>
                   {/* 모바일 메뉴 버튼 */}
                   <MobileMenuSheet

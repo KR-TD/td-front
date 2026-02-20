@@ -112,6 +112,8 @@
   "enter_title_alert": "제목을 입력해주세요!",
   "enter_content_alert": "내용을 입력해주세요!",
   "validation_error": "유효성 검사 오류",
+  "auth_error": "인증 오류",
+  "login_required": "로그인이 필요합니다.",
   "sending_code": "전송 중...",
   "send_code": "인증코드 전송",
   "verification_code_placeholder": "인증코드를 입력하세요.",

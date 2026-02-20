@@ -111,6 +111,8 @@
   "enter_title_alert": "Please enter a title!",
   "enter_content_alert": "Please enter content!",
   "validation_error": "Validation Error",
+  "auth_error": "Authentication Error",
+  "login_required": "Login is required.",
   "sending_code": "Sending...",
   "send_code": "Send Code",
   "verification_code_placeholder": "Enter verification code.",

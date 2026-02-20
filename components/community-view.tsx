@@ -71,9 +71,10 @@ interface CommunityViewProps {
   isDarkMode: boolean;
   setAlertInfo: (info: { isOpen: boolean; title: string; description: string; }) => void;
   initialPostId?: string;
+  onRequireLogin?: () => void;
 }
 
-export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: CommunityViewProps) {
+export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequireLogin }: CommunityViewProps) {
   const { t, i18n } = useTranslation();
 
   const [posts, setPosts] = useState<BoardList[]>([]);
@@ -89,6 +90,14 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
   const [commentTab, setCommentTab] = useState<"latest" | "popular">("latest");
   const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const isLoadingRef = useRef(false);
+
+  const requestLogin = useCallback(() => {
+    if (onRequireLogin) {
+      onRequireLogin();
+      return;
+    }
+    setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
+  }, [onRequireLogin, setAlertInfo, t]);
 
   const MOOD_LABEL: Record<MoodKey, string> = {
     JOY: t("emotion_joy"), SAD: t("emotion_sadness"), ANGER: t("emotion_anger"), TIRED: t("emotion_tiredness"),
@@ -206,7 +215,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
 
   const createComment = useCallback(async (boardId: number, commentText: string) => {
     const token = localStorage.getItem('accessToken');
-    if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
+    if (!token) return requestLogin();
     try {
       const response = await fetch(`https://code.haru2end.dedyn.io/api/comment/create/${boardId}`, {
         method: 'POST',
@@ -224,7 +233,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
     } catch (error) {
       setAlertInfo({ isOpen: true, title: t("network_error"), description: t("comment_network_error") });
     }
-  }, [commentTab, fetchCommentsForPost, setAlertInfo, t]);
+  }, [commentTab, fetchCommentsForPost, requestLogin, setAlertInfo, t]);
 
   const fetchRepliesForComment = useCallback(async (commentId: number, postId: number) => {
     const token = localStorage.getItem('accessToken');
@@ -248,7 +257,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
 
   const createReplyComment = useCallback(async (commentId: number, text: string, postId: number) => {
     const token = localStorage.getItem('accessToken');
-    if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
+    if (!token) return requestLogin();
     try {
       const response = await fetch(`https://code.haru2end.dedyn.io/api/comment/reply/create/${commentId}`, {
         method: "POST",
@@ -268,11 +277,11 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
         });
       }
     } catch (e) { }
-  }, [fetchRepliesForComment, setAlertInfo, t]);
+  }, [fetchRepliesForComment, requestLogin, setAlertInfo, t]);
 
   const handleToggleCommentLike = useCallback(async (commentId: number, isLiked: boolean, postId: number, isReply = false) => {
     const token = localStorage.getItem('accessToken');
-    if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
+    if (!token) return requestLogin();
     const method = isLiked ? 'DELETE' : 'POST';
     const endpoint = isLiked ? `/like/cancel/${commentId}` : `/like/${commentId}`;
     try {
@@ -300,11 +309,14 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
         });
       }
     } catch (e) { }
-  }, [setAlertInfo, t]);
+  }, [requestLogin, setAlertInfo, t]);
 
   const togglePostLike = useCallback(async (postId: number, isLiked: boolean) => {
     const token = localStorage.getItem('accessToken');
-    if (!token) { setAlertInfo({ isOpen: true, title: t('auth_error'), description: t('login_required') }); return }
+    if (!token) {
+      requestLogin();
+      return;
+    }
 
     // Store previous states for potential rollback
     const previousOpenedPost = openedPost;
@@ -342,7 +354,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId }: Commu
       setPosts(previousPosts);
       setAlertInfo({ isOpen: true, title: t('network_error'), description: t('like_network_error') });
     }
-  }, [t, setAlertInfo, openedPost, posts]);
+  }, [requestLogin, t, setAlertInfo, openedPost, posts]);
 
   const handleSharePost = useCallback(() => {
     if (!openedPost) return;
