@@ -491,7 +491,6 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
               {[
                 { key: "latest", label: t("community_latest") }, { key: "popular", label: t("community_popular") },
-                { key: "bookmarked", label: t("bookmark") },
                 { key: "JOY", label: t("emotion_joy") }, { key: "SAD", label: t("emotion_sadness") },
                 { key: "ANGER", label: t("emotion_anger") }, { key: "TIRED", label: t("emotion_tiredness") },
                 { key: "LOVE", label: t("emotion_love") }, { key: "WORRY", label: t("emotion_worry") },
@@ -503,9 +502,19 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
                 </button>
               ))}
             </div>
-            <Button onClick={handleRefresh} variant="ghost" size="icon" className="flex-shrink-0">
-              <RefreshCw className={`w-4 h-4 ${isCommunityLoading && communityCurrentPage === 0 ? 'animate-spin' : ''}`} />
-            </Button>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button
+                onClick={() => handleCategoryChange("bookmarked")}
+                variant="ghost"
+                size="sm"
+                className={`flex items-center gap-1.5 ${cat === "bookmarked" ? "text-amber-400" : ""}`}>
+                <Bookmark className="w-4 h-4" />
+                {t("bookmark")}
+              </Button>
+              <Button onClick={handleRefresh} variant="ghost" size="icon">
+                <RefreshCw className={`w-4 h-4 ${isCommunityLoading && communityCurrentPage === 0 ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
