@@ -1,11 +1,63 @@
 import type { Metadata } from "next";
 import DiaryPage from "../diary-page";
+import {
+  getCanonicalUrl,
+  getLanguageAlternates,
+  getOpenGraphLocales,
+  getSeoContent,
+  normalizeLang,
+  OG_IMAGE_URL,
+} from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "하루의 끝 - 감성 온라인 일기장 | 매일의 생각과 감정 기록",
-  description:
-    "하루의 끝에서 당신의 하루를 특별하게 마무리하세요. 감성적인 온라인 일기장에 오늘의 순간, 감정, 생각을 기록하며 나만의 다이어리를 만들고 꾸밀 수 있습니다.",
+type PageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+function getLangFromSearchParams(searchParams?: Record<string, string | string[] | undefined>) {
+  const raw = searchParams?.lang;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return normalizeLang(value);
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const lang = getLangFromSearchParams(resolvedSearchParams);
+  const seo = getSeoContent(lang);
+  const { locale, alternateLocale } = getOpenGraphLocales(lang);
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: getCanonicalUrl(lang),
+      siteName: seo.siteName,
+      images: [
+        {
+          url: OG_IMAGE_URL,
+          width: 1200,
+          height: 630,
+          alt: `${seo.siteName} preview image`,
+        },
+      ],
+      locale,
+      alternateLocale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.title,
+      description: seo.description,
+      images: [OG_IMAGE_URL],
+    },
+    alternates: {
+      canonical: getCanonicalUrl(lang),
+      languages: getLanguageAlternates(),
+    },
+  };
+}
 
 export default function Page() {
   return (

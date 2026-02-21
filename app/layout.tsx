@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { headers } from 'next/headers'
 
 import { ThemeProvider } from "../components/theme-provider"
+import { detectLangFromHeader, getSeoContent } from "@/lib/seo"
 
 import "./globals.css"
 
@@ -13,65 +14,77 @@ import { Providers } from "./providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const siteName = "하루의 끝"
 const siteUrl = "https://www.haru2end.com"
-const title = "하루의 끝 - 감성 온라인 일기장 | 매일의 생각과 감정 기록, 다이어리 꾸미기"
-const description =
-  "하루의 끝에서 당신의 하루를 특별하게 마무리하세요. 감성적인 온라인 일기장에 오늘의 순간, 감정, 생각을 기록하며 나만의 다이어리를 만들고 꾸밀 수 있습니다."
 const ogImage = `${siteUrl}/og-image.png`
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: title,
-    template: `%s | ${siteName}`,
-  },
-  description: description,
-  keywords: [
-    "하루의 끝",
-    "온라인 일기장",
-    "감성 다이어리",
-    "하루 기록",
-    "다이어리 꾸미기",
-    "매일의 생각",
-    "감정 기록",
-  ],
-  openGraph: {
-    title: title,
-    description: description,
-    url: siteUrl,
-    siteName: siteName,
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: "하루의 끝 미리보기 이미지",
-      },
-    ],
-    locale: "ko_KR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: title,
-    description: description,
-    images: [ogImage],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const lang = detectLangFromHeader(headersList.get("accept-language"))
+  const seo = getSeoContent(lang)
+
+  const localeByLang = {
+    ko: "ko_KR",
+    en: "en_US",
+    ja: "ja_JP",
+    zh: "zh_CN",
+  } as const
+  const alternateLocales = Object.entries(localeByLang)
+    .filter(([key]) => key !== lang)
+    .map(([, value]) => value)
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: seo.title,
+      template: `%s | ${seo.siteName}`,
+    },
+    description: seo.description,
+    keywords: seo.keywords,
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url: siteUrl,
+      siteName: seo.siteName,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${seo.siteName} preview image`,
+        },
+      ],
+      locale: seo.ogLocale,
+      alternateLocale: alternateLocales,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.title,
+      description: seo.description,
+      images: [ogImage],
+    },
+    robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
     },
-  },
-  icons: {
-    icon: "/favicon.ico",
-  },
-  alternates: {
-    canonical: siteUrl,
-  },
+    icons: {
+      icon: "/favicon.ico",
+    },
+    alternates: {
+      canonical: siteUrl,
+      languages: {
+        "ko-KR": `${siteUrl}/?lang=ko`,
+        "en-US": `${siteUrl}/?lang=en`,
+        "ja-JP": `${siteUrl}/?lang=ja`,
+        "zh-CN": `${siteUrl}/?lang=zh`,
+        "x-default": siteUrl,
+      },
+    },
+  }
 }
 
 export default async function RootLayout({
@@ -80,7 +93,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const headersList = await headers()
-  const lang = headersList.get('accept-language')?.split(',')[0] || 'ko'
+  const lang = detectLangFromHeader(headersList.get('accept-language'))
+  const seo = getSeoContent(lang)
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -103,7 +117,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: siteName,
+              name: seo.siteName,
               url: siteUrl,
               potentialAction: {
                 "@type": "SearchAction",
@@ -119,7 +133,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: siteName,
+              name: seo.orgName,
               url: siteUrl,
               logo: `${siteUrl}/icon-512x512.png`
             })
@@ -133,14 +147,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "@type": "Article",
               "author": {
                 "@type": "Organization",
-                "name": "하루의 끝 개발팀"
+                "name": seo.articleAuthor
               },
-              "headline": title,
-              "description": description,
+              "headline": seo.title,
+              "description": seo.description,
               "image": ogImage,
               "publisher": {
                 "@type": "Organization",
-                "name": "하루의 끝",
+                "name": seo.orgName,
                 "logo": {
                   "@type": "ImageObject",
                   "url": `${siteUrl}/icon-512x512.png`

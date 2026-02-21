@@ -2,11 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://www.haru2end.com";
+  const now = new Date();
   return [
-    { url: `${base}/`, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    // 해시 URL도 색인에 힌트를 주기 위해 포함
-    { url: `${base}/#list`, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${base}/#support`, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${base}/#hall`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
+    { url: `${base}/?lang=ko`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/?lang=en`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/?lang=ja`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/?lang=zh`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
   ];
 }

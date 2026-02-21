@@ -59,6 +59,7 @@ export default function Component({ boardId }: { boardId?: string }) {
   const dismissAppPromo = () => setShowAppPromo(false);
 
   const { t, i18n } = useTranslation();
+  const useCompactDesktopNav = i18n.language === "en" || i18n.language === "ja";
   const { isLoggedIn, isLoading, user, logout, refreshUser } = useAuth();
   const {
     diaryEntries,
@@ -155,14 +156,20 @@ export default function Component({ boardId }: { boardId?: string }) {
         <div className="max-w-4xl mx-auto relative z-10">
           <header className={`sticky top-0 z-20 w-full transition-all duration-500 ${isDarkMode ? "bg-slate-900/80 border-b border-slate-700/50 shadow-lg shadow-slate-900/20 backdrop-blur-sm" : "bg-rose-100 border-b border-rose-200 shadow-lg shadow-rose-200/10"}`}>
             <div className="max-w-4xl mx-auto px-2 sm:px-4">
-              <div className="flex items-center justify-end h-16 gap-3">
-                <nav className="hidden md:grid flex-1 min-w-0 grid-cols-6 gap-1 pr-1">
-                  <Button onClick={() => setCurrentView("write")} variant={currentView === 'write' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'write' ? (isDarkMode ? 'bg-purple-600/30 text-white' : 'bg-rose-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("write_diary")}</span></Button>
-                  <Button onClick={() => setCurrentView("list")} variant={currentView === 'list' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'list' ? (isDarkMode ? 'bg-indigo-600/30 text-white' : 'bg-indigo-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("diary_list")}</span></Button>
-                  <Button onClick={() => setCurrentView("community")} variant={currentView === 'community' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'community' ? (isDarkMode ? 'bg-blue-600/30 text-white' : 'bg-blue-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("community")}</span></Button>
-                  <Button onClick={() => setCurrentView("support")} title={t("support_developer")} variant={currentView === 'support' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'support' ? (isDarkMode ? 'bg-pink-600/30 text-white' : 'bg-pink-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("support_short", "후원")}</span></Button>
-                  <Button onClick={() => setCurrentView("hall")} title={t("hall_of_fame")} variant={currentView === 'hall' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'hall' ? (isDarkMode ? 'bg-yellow-600/30 text-white' : 'bg-yellow-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("hall_short", "전당")}</span></Button>
-                  <Button onClick={() => setCurrentView("contact")} title={t("contact_developer")} variant={currentView === 'contact' ? 'secondary' : 'ghost'} className={`w-full min-w-0 px-2 py-2 rounded-lg text-xs ${currentView === 'contact' ? (isDarkMode ? 'bg-green-600/30 text-white' : 'bg-green-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}><span>{t("contact_short", "문의")}</span></Button>
+              <div className="flex items-center justify-end h-16 gap-3 md:pr-3 lg:pr-6">
+                <nav className="hidden md:flex items-center gap-2 pr-1 shrink-0">
+                  {useCompactDesktopNav ? (
+                    <Button onClick={() => setCurrentView(currentView === "write" ? "list" : "write")} variant={currentView === 'write' || currentView === 'list' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'write' || currentView === 'list' ? (isDarkMode ? 'bg-purple-600/30 text-white' : 'bg-rose-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{currentView === "write" ? t("diary_list") : t("write_diary")}</Button>
+                  ) : (
+                    <>
+                      <Button onClick={() => setCurrentView("write")} variant={currentView === 'write' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'write' ? (isDarkMode ? 'bg-purple-600/30 text-white' : 'bg-rose-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("write_diary")}</Button>
+                      <Button onClick={() => setCurrentView("list")} variant={currentView === 'list' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'list' ? (isDarkMode ? 'bg-indigo-600/30 text-white' : 'bg-indigo-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("diary_list")}</Button>
+                    </>
+                  )}
+                  <Button onClick={() => setCurrentView("community")} variant={currentView === 'community' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'community' ? (isDarkMode ? 'bg-blue-600/30 text-white' : 'bg-blue-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("community")}</Button>
+                  <Button onClick={() => setCurrentView("support")} variant={currentView === 'support' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'support' ? (isDarkMode ? 'bg-pink-600/30 text-white' : 'bg-pink-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("support_developer")}</Button>
+                  <Button onClick={() => setCurrentView("hall")} variant={currentView === 'hall' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'hall' ? (isDarkMode ? 'bg-yellow-600/30 text-white' : 'bg-yellow-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("hall_of_fame")}</Button>
+                  <Button onClick={() => setCurrentView("contact")} variant={currentView === 'contact' ? 'secondary' : 'ghost'} className={`px-3 py-2 rounded-lg text-xs ${currentView === 'contact' ? (isDarkMode ? 'bg-green-600/30 text-white' : 'bg-green-200 text-gray-800') : (isDarkMode ? 'text-gray-300' : 'text-gray-800')}`}>{t("contact_developer")}</Button>
                 </nav>
                 <div className="flex items-center gap-2 shrink-0">
                                     {isClient && (
