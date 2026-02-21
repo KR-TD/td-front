@@ -45,6 +45,15 @@ export function MobileMenuSheet({
     setIsSheetOpen(false);
   };
 
+  const navButtonClass = (view: "write" | "list" | "support" | "hall" | "contact" | "community") => {
+    const base = "justify-start";
+    const active = isDarkMode
+      ? "bg-slate-700 text-white border border-slate-600"
+      : "bg-rose-100 text-rose-700 border border-rose-200";
+    const inactive = isDarkMode ? "" : "text-gray-800";
+    return `${base} ${currentView === view ? active : inactive}`;
+  };
+
   return (
     <div className="md:hidden">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -72,11 +81,12 @@ export function MobileMenuSheet({
           )}
 
           <div className="grid gap-4 py-4">
-            <Button onClick={() => {setCurrentView(currentView === "write" ? "list" : "write"); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{currentView === "write" ? t("diary_list") : t("write_diary")}</Button>
-            <Button onClick={() => {setCurrentView("community"); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("community")}</Button>
-            <Button onClick={() => {setCurrentView("support"); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("support_developer")}</Button>
-            <Button onClick={() => {setCurrentView("hall"); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("hall_of_fame")}</Button>
-            <Button onClick={() => {setCurrentView("contact"); closeSheet();}} variant="ghost" className={`justify-start ${isDarkMode ? '' : 'text-gray-800'}`}>{t("contact_developer")}</Button>
+            <Button onClick={() => {setCurrentView("write"); closeSheet();}} variant="ghost" className={navButtonClass("write")}>{t("write_diary")}</Button>
+            <Button onClick={() => {setCurrentView("list"); closeSheet();}} variant="ghost" className={navButtonClass("list")}>{t("diary_list")}</Button>
+            <Button onClick={() => {setCurrentView("community"); closeSheet();}} variant="ghost" className={navButtonClass("community")}>{t("community")}</Button>
+            <Button onClick={() => {setCurrentView("support"); closeSheet();}} variant="ghost" className={navButtonClass("support")}>{t("support_developer")}</Button>
+            <Button onClick={() => {setCurrentView("hall"); closeSheet();}} variant="ghost" className={navButtonClass("hall")}>{t("hall_of_fame")}</Button>
+            <Button onClick={() => {setCurrentView("contact"); closeSheet();}} variant="ghost" className={navButtonClass("contact")}>{t("contact_developer")}</Button>
             
             <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
 
