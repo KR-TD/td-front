@@ -504,7 +504,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               <Button
-                onClick={() => handleCategoryChange("bookmarked")}
+                onClick={() => handleCategoryChange(cat === "bookmarked" ? "latest" : "bookmarked")}
                 variant="ghost"
                 size="sm"
                 className={`flex items-center gap-1.5 ${cat === "bookmarked" ? "text-amber-400" : ""}`}>
