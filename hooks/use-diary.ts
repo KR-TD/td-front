@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { TFunction } from 'i18next';
+import { authFetch } from '@/lib/auth-fetch';
 
 // Type definitions
 export interface DiaryEntry {
@@ -28,9 +29,7 @@ export function useDiary(
     const token = localStorage.getItem('accessToken');
     if (!token) return;
     try {
-      const response = await fetch('https://code.haru2end.dedyn.io/api/diary/list', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const response = await authFetch('https://code.haru2end.dedyn.io/api/diary/list');
       setDiaryEntries(response.ok ? (await response.json()).list || [] : []);
     } catch (error) {
       console.error("Error fetching diaries:", error);
@@ -49,9 +48,8 @@ export function useDiary(
     if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
     
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/diary/${id}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/diary/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 204) {
         fetchDiaries();
@@ -71,9 +69,8 @@ export function useDiary(
     if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
 
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/board/create/${id}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/board/create/${id}`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.status === 201) {
         fetchDiaries();
@@ -92,9 +89,7 @@ export function useDiary(
     if (!token) return setAlertInfo({ isOpen: true, title: t("auth_error"), description: t("login_required") });
 
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/diary/${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/diary/${id}`);
       if (response.ok) {
         const data: DiaryDetailResponse = await response.json();
         setSelectedEntry({ ...data, shared: diaryEntries.find(e => e.id === id)?.shared || false });

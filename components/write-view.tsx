@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ko, enUS, ja, zhCN, Locale } from 'date-fns/locale';
@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Moon, Star, Heart, Save, Camera } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { authFetch } from "@/lib/auth-fetch";
 
 interface WriteViewProps {
   isDarkMode: boolean;
@@ -19,6 +21,7 @@ interface WriteViewProps {
 
 export function WriteView({ isDarkMode, setAlertInfo, fetchDiaries, setZoomedImage }: WriteViewProps) {
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   
   const [diaryTitle, setDiaryTitle] = useState("");
   const [diaryContent, setDiaryContent] = useState("");
@@ -27,6 +30,7 @@ export function WriteView({ isDarkMode, setAlertInfo, fetchDiaries, setZoomedIma
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const draftStorageKey = useMemo(() => `diaryDraft:${user?.id ?? "guest"}`, [user?.id]);
 
   const emotionMap: { [key: string]: string } = {
     "😊": t("emotion_joy"), "😢": t("emotion_sadness"), "😡": t("emotion_anger"),
@@ -93,9 +97,8 @@ export function WriteView({ isDarkMode, setAlertInfo, fetchDiaries, setZoomedIma
         const formData = new FormData();
         formData.append("images", selectedImageFile);
 
-        const imageResponse = await fetch('https://code.haru2end.dedyn.io/api/image/diary/upload', {
+        const imageResponse = await authFetch('https://code.haru2end.dedyn.io/api/image/diary/upload', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
           body: formData,
         });
 
@@ -116,14 +119,15 @@ export function WriteView({ isDarkMode, setAlertInfo, fetchDiaries, setZoomedIma
         mood: selectedMood ? emojiToMoodEnumMap[selectedMood] : undefined,
       };
 
-      const response = await fetch('https://code.haru2end.dedyn.io/api/diary/create', {
+      const response = await authFetch('https://code.haru2end.dedyn.io/api/diary/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(diaryRequest),
       });
 
       if (response.status === 201) {
         setAlertInfo({ isOpen: true, title: t("save_success", "일기 저장 성공"), description: t("diary_saved_successfully", "일기가 성공적으로 저장되었습니다.") });
+        localStorage.removeItem(draftStorageKey);
         fetchDiaries();
         setDiaryTitle("");
         setDiaryContent("");
@@ -141,6 +145,56 @@ export function WriteView({ isDarkMode, setAlertInfo, fetchDiaries, setZoomedIma
       setAlertInfo({ isOpen: true, title: t("network_error", "네트워크 오류"), description: t("save_network_error", "일기 저장 중 네트워크 오류가 발생했습니다.") });
     }
   };
+
+  useEffect(() => {
+    const rawDraft = localStorage.getItem(draftStorageKey);
+    if (!rawDraft) return;
+
+    try {
+      const draft = JSON.parse(rawDraft) as {
+        title?: string;
+        content?: string;
+        mood?: string;
+      };
+
+      const restoredTitle = draft.title ?? "";
+      const restoredContent = draft.content ?? "";
+      const restoredMood = draft.mood;
+      const hasDraft = restoredTitle.trim() || restoredContent.trim() || restoredMood;
+
+      if (!hasDraft) return;
+
+      setDiaryTitle(restoredTitle);
+      setDiaryContent(restoredContent);
+      setSelectedMood(restoredMood);
+      setAlertInfo({
+        isOpen: true,
+        title: t("draft_restored", "임시저장 불러오기"),
+        description: t("draft_restored_description", "작성 중이던 일기를 불러왔어요."),
+      });
+    } catch {
+      localStorage.removeItem(draftStorageKey);
+    }
+  }, [draftStorageKey, setAlertInfo, t]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const hasDraft = diaryTitle.trim() || diaryContent.trim() || selectedMood;
+      if (!hasDraft) {
+        localStorage.removeItem(draftStorageKey);
+        return;
+      }
+
+      const draft = {
+        title: diaryTitle,
+        content: diaryContent,
+        mood: selectedMood,
+      };
+      localStorage.setItem(draftStorageKey, JSON.stringify(draft));
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [diaryTitle, diaryContent, selectedMood, draftStorageKey]);
 
   return (
     <Card className={`backdrop-blur-sm border-0 shadow-2xl transition-all duration-500 ${isDarkMode ? "bg-slate-900/80 shadow-purple-500/30 border border-slate-700/50" : "bg-white/90 border border-rose-200/50 shadow-rose-200/30"}`}>

@@ -10,6 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Eye, MessageSquare, Share2, Bookmark, ChevronLeft, MoreVertical, Send, RefreshCw, Heart } from "lucide-react";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { ko, enUS, ja, zhCN, Locale } from 'date-fns/locale';
+import { authFetch } from "@/lib/auth-fetch";
 
 interface BoardList {
   id: number;
@@ -20,6 +21,7 @@ interface BoardList {
   view: number;
   commentCount: number;
   loveCount: number;
+  bookmarked?: boolean;
   mood: string;
   boardCreateTime: string;
 }
@@ -28,6 +30,7 @@ interface BoardDetailResponse extends BoardList {
   content: string;
   writeTime: string;
   liked: boolean;
+  bookmarked?: boolean;
   thumbnail: string | null;
 }
 
@@ -65,7 +68,7 @@ interface ReplyCommentList {
 }
 
 type MoodKey = "JOY" | "SAD" | "ANGER" | "TIRED" | "LOVE" | "WORRY" | "ETC";
-type Cat = "latest" | "popular" | MoodKey;
+type Cat = "latest" | "popular" | "bookmarked" | MoodKey;
 
 interface CommunityViewProps {
   isDarkMode: boolean;
@@ -155,9 +158,18 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     let url = `https://code.haru2end.dedyn.io/api/board`;
     if (category === "latest") url += `/list?page=${page}&limit=${limit}`;
     else if (category === "popular") url += `/popular/list?page=${page}&limit=${limit}`;
+    else if (category === "bookmarked") {
+      if (!token) {
+        setPosts([]);
+        setCommunityTotalPages(1);
+        requestLogin();
+        return;
+      }
+      url += `/bookmark/list?page=${page}&limit=${limit}`;
+    }
     else url += `/mood/list?page=${page}&limit=${limit}&mood=${category}`;
     try {
-      const response = await fetch(url, { headers });
+      const response = await authFetch(url, { headers });
       if (response.ok) {
         const data: BoardListResponse = await response.json();
         setPosts(prev => page === 0 ? data.list : [...prev, ...data.list.filter(p => !prev.find(pp => pp.id === p.id))]);
@@ -170,7 +182,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
       setIsCommunityLoading(false);
       isLoadingRef.current = false;
     }
-  }, []);
+  }, [requestLogin]);
 
   const fetchCommentsForPost = useCallback(async (boardId: number, type: 'latest' | 'popular') => {
     const token = localStorage.getItem('accessToken');
@@ -184,7 +196,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
         ? `/guest/list/${boardId}` : `/guest/popular/list/${boardId}`;
     }
     try {
-      const response = await fetch(url, { headers });
+      const response = await authFetch(url, { headers });
       if (response.ok) {
         const data: CommentListResponse = await response.json();
         setPostComments(prev => ({ ...prev, [boardId.toString()]: data.list || [] }));
@@ -200,7 +212,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     let url = `https://code.haru2end.dedyn.io/api/board`;
     url += token ? `/${id}` : `/guest/${id}`;
     try {
-      const response = await fetch(url, { headers });
+      const response = await authFetch(url, { headers });
       if (response.ok) {
         const data: BoardDetailResponse = await response.json();
         setOpenedPost(data);
@@ -217,7 +229,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     const token = localStorage.getItem('accessToken');
     if (!token) return requestLogin();
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/comment/create/${boardId}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/comment/create/${boardId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ comment: commentText }),
@@ -241,7 +253,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     let url = `https://code.haru2end.dedyn.io/api/comment`;
     url += token ? `/reply/list/${commentId}` : `/guest/reply/list/${commentId}`;
     try {
-      const response = await fetch(url, { headers });
+      const response = await authFetch(url, { headers });
       if (response.ok) {
         const data = await response.json();
         setPostComments(prev => {
@@ -259,7 +271,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     const token = localStorage.getItem('accessToken');
     if (!token) return requestLogin();
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/comment/reply/create/${commentId}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/comment/reply/create/${commentId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ comment: text }),
@@ -285,7 +297,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     const method = isLiked ? 'DELETE' : 'POST';
     const endpoint = isLiked ? `/like/cancel/${commentId}` : `/like/${commentId}`;
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/comment${endpoint}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/comment${endpoint}`, {
         method, headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok || response.status === 204) {
@@ -337,7 +349,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
     const method = isLiked ? 'DELETE' : 'POST';
     const endpoint = isLiked ? `/like/cancel/${postId}` : `/like/${postId}`;
     try {
-      const response = await fetch(`https://code.haru2end.dedyn.io/api/board${endpoint}`, {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/board${endpoint}`, {
         method,
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -355,6 +367,48 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
       setAlertInfo({ isOpen: true, title: t('network_error'), description: t('like_network_error') });
     }
   }, [requestLogin, t, setAlertInfo, openedPost, posts]);
+
+  const togglePostBookmark = useCallback(async (postId: number, isBookmarked: boolean) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      requestLogin();
+      return;
+    }
+
+    const previousOpenedPost = openedPost;
+    const previousPosts = posts;
+
+    setOpenedPost(prev => prev ? ({ ...prev, bookmarked: !isBookmarked }) : prev);
+    setPosts(prev => prev.map(p =>
+      p.id === postId ? { ...p, bookmarked: !isBookmarked } : p
+    ));
+
+    const method = isBookmarked ? 'DELETE' : 'POST';
+    const endpoint = isBookmarked ? `/bookmark/cancel/${postId}` : `/bookmark/${postId}`;
+    try {
+      const response = await authFetch(`https://code.haru2end.dedyn.io/api/board${endpoint}`, {
+        method,
+      });
+      if (!response.ok && response.status !== 204) {
+        setOpenedPost(previousOpenedPost);
+        setPosts(previousPosts);
+        const errorData = await response.json().catch(() => ({}));
+        setAlertInfo({
+          isOpen: true,
+          title: t('save_failed', '저장 실패'),
+          description: errorData.message || t('bookmark_toggle_error', '북마크 처리 중 오류가 발생했습니다.'),
+        });
+      }
+    } catch {
+      setOpenedPost(previousOpenedPost);
+      setPosts(previousPosts);
+      setAlertInfo({
+        isOpen: true,
+        title: t('network_error'),
+        description: t('bookmark_network_error', '북마크 처리 중 네트워크 오류가 발생했습니다.'),
+      });
+    }
+  }, [openedPost, posts, requestLogin, setAlertInfo, t]);
 
   const handleSharePost = useCallback(() => {
     if (!openedPost) return;
@@ -413,6 +467,10 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
 
   const handleCategoryChange = (newCategory: Cat) => {
     if (newCategory === cat) return;
+    if (newCategory === "bookmarked" && !localStorage.getItem('accessToken')) {
+      requestLogin();
+      return;
+    }
     setCat(newCategory);
     setCommunityCurrentPage(0);
     setPosts([]);
@@ -433,6 +491,7 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
             <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
               {[
                 { key: "latest", label: t("community_latest") }, { key: "popular", label: t("community_popular") },
+                { key: "bookmarked", label: t("bookmark") },
                 { key: "JOY", label: t("emotion_joy") }, { key: "SAD", label: t("emotion_sadness") },
                 { key: "ANGER", label: t("emotion_anger") }, { key: "TIRED", label: t("emotion_tiredness") },
                 { key: "LOVE", label: t("emotion_love") }, { key: "WORRY", label: t("emotion_worry") },
@@ -512,7 +571,12 @@ export function CommunityView({ isDarkMode, setAlertInfo, initialPostId, onRequi
                   className={`flex items-center gap-1.5 text-sm ${openedPost.liked ? 'text-pink-500 font-semibold' : ''}`}>
                   <Heart className="w-5 h-5" /> {openedPost.loveCount}
                 </Button>
-                <Button variant="ghost" className="flex items-center gap-1.5 text-sm"><Bookmark className="w-5 h-5" /> {t('bookmark')}</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => togglePostBookmark(openedPost.id, !!openedPost.bookmarked)}
+                  className={`flex items-center gap-1.5 text-sm ${openedPost.bookmarked ? 'text-amber-500 font-semibold' : ''}`}>
+                  <Bookmark className="w-5 h-5" /> {t('bookmark')}
+                </Button>
                 <Button variant="ghost" onClick={handleSharePost} className="flex items-center gap-1.5 text-sm">
                   <Share2 className="w-5 h-5" /> {t('share')}
                 </Button>

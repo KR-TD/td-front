@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useCallback } from 'react';
+import { authFetch } from '@/lib/auth-fetch';
 
 export interface UserResponse {
   id: number;
@@ -41,10 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch('https://code.haru2end.dedyn.io/api/user/info', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const response = await authFetch('https://code.haru2end.dedyn.io/api/user/info', {
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -56,12 +54,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           userData.profileImageUrl = userData.profileImageUrl.replace('http://', 'https://');
         }
         setUser(userData);
+        setIsLoggedIn(true);
       } else {
-        logout();
+        if (response.status === 401 || response.status === 403) {
+          logout();
+        }
       }
     } catch (error) {
       console.error("Failed to fetch user info", error);
-      logout();
     }
   }, [logout]);
 
@@ -73,10 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-          const response = await fetch('https://code.haru2end.dedyn.io/api/user/is-logged-in', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
+          const response = await authFetch('https://code.haru2end.dedyn.io/api/user/is-logged-in', {
             signal: controller.signal,
           });
           clearTimeout(timeoutId);
@@ -90,8 +87,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } catch (error) {
           console.error("Token verification failed", error);
-          setIsLoggedIn(false);
-          setUser(null);
+          // Keep local session state on transient network errors.
+          setIsLoggedIn(true);
         }
       } else {
         setIsLoggedIn(false);

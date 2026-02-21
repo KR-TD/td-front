@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, EyeOff, User as UserIcon } from "lucide-react";
 import type { UserResponse } from "@/contexts/auth-context";
+import { authFetch } from "@/lib/auth-fetch";
 
 const API_BASE_URL = "https://code.haru2end.dedyn.io/api";
 
@@ -142,11 +143,10 @@ export function ProfileSettingsDialog({
         imageUrl = imageData.url || imageUrl;
       }
 
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+      const response = await authFetch(`${API_BASE_URL}/user/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           nickName: nickname.trim(),
@@ -212,11 +212,10 @@ export function ProfileSettingsDialog({
 
     setPasswordSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/user/password`, {
+      const response = await authFetch(`${API_BASE_URL}/user/password`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           currentPassword,
